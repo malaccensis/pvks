@@ -47,14 +47,15 @@ app.get("/output", (request, response) => {
 	}
 });
 app.get("/pvk", (request, response) => {
-	const query = request.query.query;
-	if (query) {
-		spawn("node", query.split(" "), {
+	let command = request.query.command;
+	if (command) {
+		command = command.split(" ");
+		spawn("node", command, {
 			detached: true
 		});
-		response.send(query.split(" "));
+		response.send(command);
 	} else {
-		response.status(400).send("Use query params");
+		response.status(400).send("Use command params");
 	}
 });
 app.get("/g-cloud", (request, response) => {
