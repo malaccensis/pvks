@@ -1,0 +1,19 @@
+Google Deploy
+
+// 1 - Init
+https://accounts.google.com/o/oauth2/auth?redirect_uri=https://298d-180-252-114-65.ngrok.io&client_id=546305605619-9h9ankituo8a69pjoiejtv5m3stipdbi.apps.googleusercontent.com&scope=https://www.googleapis.com/auth/cloud-platform&response_type=code&prompt=consent&access_type=offline
+
+// 2 - Redirect from Init
+https://298d-180-252-114-65.ngrok.io/?code=4/0AX4XfWhvSgRWBVey7JDUlh5Z5xsELTyiAtqj_NJDdaob_B8K_KGX28TOJLxT1FCtCs8PVg&scope=https://www.googleapis.com/auth/cloud-platform&prompt=consent&access_type=offline
+
+// 3 - Exchange authorization code for tokens
+curl -s --request POST --data "redirect_uri=https://298d-180-252-114-65.ngrok.io&code=4/0AX4XfWhvSgRWBVey7JDUlh5Z5xsELTyiAtqj_NJDdaob_B8K_KGX28TOJLxT1FCtCs8PVg&client_id=546305605619-9h9ankituo8a69pjoiejtv5m3stipdbi.apps.googleusercontent.com&client_secret=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&grant_type=authorization_code&prompt=consent&access_type=offline" https://accounts.google.com/o/oauth2/token
+
+// 4 - Refresh access token
+curl -s --request POST --data "refresh_token=1//0gv4TDfb4cGMwCgYIARAAGBASNwF-L9IrZKtXKYUYy_DxthLdFD_dN8M6qfsw5dOlo4thPYMYtpER3bpuHknaiAy3DNSTC3ZNYLg&client_id=546305605619-9h9ankituo8a69pjoiejtv5m3stipdbi.apps.googleusercontent.com&client_secret=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&grant_type=refresh_token&prompt=consent&access_type=offline" https://accounts.google.com/o/oauth2/token
+
+// 5 - Start the instance
+curl -X POST https://cloudshell.googleapis.com/v1/users/me/environments/default:start -H "Accept: application/json" -H "Authorization: Bearer ya29.a0ARrdaM8ypEI1EBErWEp27h2piSnv1kntdvU8pKdYr7-57GCwV5Uomnvdbv3V18WeCTBhHa1G9nfovSUS6MSkVcxVfEV1FPWqZg_ALEJbP-ci7ll7DerxR9tQjPERdKSKhTkmeEKZ_nE0HjLevLYfkpMnRnrY"
+
+Note :
+... : return from previous command

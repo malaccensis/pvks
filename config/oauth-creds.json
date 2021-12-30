@@ -1,0 +1,20 @@
+{
+	"web": {
+		"client_id": "1020590294325-rk8asngamdolu7e34c3878ohravna0ue.apps.googleusercontent.com",
+		"project_id": "pvks-cd40e",
+		"auth_uri": "https://accounts.google.com/o/oauth2/auth",
+		"token_uri": "https://oauth2.googleapis.com/token",
+		"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+		"client_secret": "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",
+		"redirect_uris": [
+			"https://pvks.local.lt/g-cloud-oauthcallback",
+			"https://pvks-cd40e.firebaseapp.com/__/auth/handler"
+		],
+		"javascript_origins": [
+			"http://localhost",
+			"http://localhost:5000",
+			"https://pvks-cd40e.firebaseapp.com",
+			"https://pvks.local.lt"
+		]
+	}
+}
