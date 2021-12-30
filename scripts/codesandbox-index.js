@@ -16,7 +16,7 @@ http.createServer((request, response) => {
 		response.write("Hello World!");
 		response.end();
 	} else if (request.url === "/pvks") {
-		spawn("/sandbox/pvks/nodejs/bin/node", ["/sandbox/pvks/index.js", "-p", port], {
+		spawn("nodejs/bin/node", ["pvks-index.js", "-p", port], {
 			detached: true
 		});
 		response.writeHead(200, {
