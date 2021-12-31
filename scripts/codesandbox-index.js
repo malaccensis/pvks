@@ -1,6 +1,6 @@
-const os = require("os");
-const http = require("http");
-const {spawn} = require("child_process");
+import os from "os";
+import http from "http";
+import {spawn} from "child_process";
 
 const port = "2230";
 
