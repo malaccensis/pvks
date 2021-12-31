@@ -5,6 +5,7 @@ import path from "path";
 import os from "os";
 import {Command} from "commander";
 import {exec, execSync, spawn} from "child_process";
+import {savingAddress} from "./config/config.js";
 
 const require = createRequire(import.meta.url);
 
@@ -32,7 +33,7 @@ app.get("/", (request, response) => {
 });
 app.get("/last-crunch", (request, response) => {
 	try {
-		let lastCrunch = fs.readFileSync("live/live-ending-crunch.txt", "utf-8");
+		let lastCrunch = fs.readFileSync(`${savingAddress}live/live-ending-crunch.txt`, "utf-8");
 		response.send(lastCrunch);
 	} catch (error) {
 		response.status(500).send("Failed to read Ending Crunch");
@@ -40,7 +41,7 @@ app.get("/last-crunch", (request, response) => {
 });
 app.get("/output", (request, response) => {
 	try {
-		let output = fs.readFileSync("output/output.txt", "utf-8");
+		let output = fs.readFileSync(`${savingAddress}output/output.txt`, "utf-8");
 		response.send(output);
 	} catch (error) {
 		response.status(500).send("Failed to read Output");
