@@ -141,7 +141,7 @@ const interval = setInterval(() => {
 initFirestoreDatabase();
 
 const regenerate = (inputAddresses = [], fileAddresses = [], urlAddresses = []) => {
-	exec(`cd crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist} -r`, (error, stdout, stderr) => {
+	exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist} -r`, (error, stdout, stderr) => {
 		if (error) {
 			processLineByLine(inputAddresses, fileAddresses, urlAddresses);
 		} else {
@@ -346,7 +346,7 @@ if (options.resume) {
 			log(chalkError("Failed to read Ending Crunch"));
 		}
 	} else {
-		exec(`cd crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist}`, (error, stdout, stderr) => {
+		exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist}`, (error, stdout, stderr) => {
 			if (error) {
 				processLineByLine(options.address, fileAddresses, urlAddresses);
 			} else {
