@@ -9,3 +9,21 @@ export const writeStreamAppendConfig = {
 	"encoding": null,
 	"mode": "0666"
 };
+
+export const collection = "pvks";
+export const statuses = {
+	first: "awake",
+	second: "done"
+};
+export const platforms = {
+	first: "Heroku",
+	second: "Evennode",
+	third: "Codesandbox"
+};
+
+export const scriptId = "{scriptId}";
+export const protocol = "{protocol}";
+export const domain = "{domain}";
+export const platform = "{platform}";
+export const platformDomain = "{platform_domain}";
+export const codesandboxUrl = "{codesandbox_url}";

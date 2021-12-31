@@ -21,7 +21,16 @@ import {
 	savingAddress,
 	filePrefixAddress,
 	liveEndingCrunch,
-	writeStreamAppendConfig
+	writeStreamAppendConfig,
+	collection,
+	statuses,
+	platforms,
+	scriptId,
+	protocol,
+	domain,
+	platform,
+	platformDomain,
+	codesandboxUrl
 } from "./config/config.js";
 
 const commandExec = "eth-private-key-finder";
@@ -50,24 +59,13 @@ program
 program.parse(process.argv);
 const options = program.opts();
 
-const collection = "pvks";
-const statuses = {
-	first: "awake",
-	second: "done"
-};
-const platforms = {
-	first: "Heroku",
-	second: "Evennode",
-	third: "Codesandbox"
-};
-const scriptId = "{scriptId}";
-const protocol = "{protocol}";
-const domain = "{domain}";
-const platform = "{platform}";
-const platformDomain = "{platform_domain}";
 const keepAlive = (callback = null) => {
 	if (platform === platforms.first) {
 		exec(`curl ${protocol}://${domain}.${platformDomain}/last-crunch`, (error, stdout, stderr) => {
+			if (callback) callback();
+		});
+	} else if (platform === platforms.third) {
+		exec(`curl -L ${codesandboxUrl}`, (error, stdout, stderr) => {
 			if (callback) callback();
 		});
 	} else {
