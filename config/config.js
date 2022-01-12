@@ -18,7 +18,7 @@ export const statuses = {
 export const platforms = {
 	first: "Heroku",
 	second: "Evennode",
-	third: "Codesandbox"
+	third: "Vercel"
 };
 
 export const scriptId = "{scriptId}";

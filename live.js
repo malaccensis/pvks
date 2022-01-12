@@ -64,10 +64,6 @@ const keepAlive = (callback = null) => {
 		exec(`curl ${protocol}://${domain}.${platformDomain}/last-crunch`, (error, stdout, stderr) => {
 			if (callback) callback();
 		});
-	} else if (platform === platforms.third) {
-		exec(`curl -L ${codesandboxUrl}`, (error, stdout, stderr) => {
-			if (callback) callback();
-		});
 	} else {
 		if (callback) callback();
 	}
