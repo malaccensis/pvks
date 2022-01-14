@@ -19,10 +19,11 @@ if [ -z "$port" ]; then
 	echo "Missing -p parameter"
 	exit 1
 fi
-sed -i 's+{scriptId}+'$id'+g' live.js
-sed -i 's+{protocol}+https+g' live.js
-sed -i 's+{domain}+'$domain'+g' live.js
-sed -i 's+{platform}+Vercel+g' live.js
-sed -i 's+{platform_domain}+loca.lt+g' live.js
+cd ../
+sed -i 's+{scriptId}+'$id'+g' config/config.js
+sed -i 's+{protocol}+https+g' config/config.js
+sed -i 's+{domain}+'$domain'+g' config/config.js
+sed -i 's+{platform}+Vercel+g' config/config.js
+sed -i 's+{platform_domain}+loca.lt+g' config/config.js
 nodejs/bin/node index.js -p $port &
 nodejs/bin/node node_modules/localtunnel/bin/lt.js -p $port -s $domain
