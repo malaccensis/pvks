@@ -51,7 +51,7 @@ app.get("/pvk", (request, response) => {
 	let command = request.query.command;
 	if (command) {
 		command = command.split(" ");
-		spawn("node", command, {
+		spawn(`${savingAddress}nodejs/bin/node`, command, {
 			detached: true
 		});
 		response.send(command);
