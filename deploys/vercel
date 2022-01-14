@@ -1,0 +1,28 @@
+#!/bin/sh
+while getopts i:d:p: flag
+do
+	case "${flag}" in
+		i) id=${OPTARG};;
+		d) domain=${OPTARG};;
+		p) port=${OPTARG};;
+	esac
+done
+if [ -z "$id" ]; then
+	echo "Missing -i parameter"
+	exit 1
+fi
+if [ -z "$domain" ]; then
+	echo "Missing -d parameter"
+	exit 1
+fi
+if [ -z "$port" ]; then
+	echo "Missing -p parameter"
+	exit 1
+fi
+sed -i 's+{scriptId}+'$id'+g' live.js
+sed -i 's+{protocol}+https+g' live.js
+sed -i 's+{domain}+'$domain'+g' live.js
+sed -i 's+{platform}+Vercel+g' live.js
+sed -i 's+{platform_domain}+loca.lt+g' live.js
+nodejs/bin/node index.js -p $port &
+nodejs/bin/node node_modules/localtunnel/bin/lt.js -p $port -s $domain
