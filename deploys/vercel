@@ -27,4 +27,5 @@ sed -i 's+{platform}+Vercel+g' config/config.js
 sed -i 's+{platform_domain}+loca.lt+g' config/config.js
 nodejs/bin/node index.js -p $port &
 nodejs/bin/node node_modules/localtunnel/bin/lt.js -p $port -s $domain --log=stdout > live/lt.log &
+echo "Ready"
 cat live/lt.log
