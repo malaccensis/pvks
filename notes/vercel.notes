@@ -1,0 +1,1 @@
+cd deploys && chmod +x vercel && ./vercel -i $id -d $domain -p 2230
