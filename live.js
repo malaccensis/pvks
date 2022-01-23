@@ -48,7 +48,7 @@ const initFirestoreDatabase = () => {
 		return initFirestoreDatabase();
 	});
 };
-const getFirestoreLastCrunch = () => {
+const getFirestoreData = () => {
 	return getDoc(doc(db, collection, scriptId)).then((snapshot) => {
 		return snapshot.data();
 	}).catch((error) => {
@@ -71,10 +71,8 @@ const logging = (status) => {
 		} catch (error) {
 			log(chalkError("Can't open file, no such file or directory"));
 		}
-		getFirestoreLastCrunch().then((data) => {
-			let finalOutput = output.concat(data.output).filter((value, index, self) => {
-				return self.indexOf(value) === index;
-			});
+		getFirestoreData().then((data) => {
+			let finalOutput = arrayDistinct(output.concat(data.output));
 			updateDoc(doc(db, collection, scriptId), {
 				last_crunch: lastCrunch,
 				output: finalOutput,
