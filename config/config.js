@@ -4,6 +4,7 @@ export const savingAddress = "./";
 export const filePrefixAddress = "-private-keys.txt";
 export const totalLinePerFile = 10000;
 export const liveEndingCrunch = `${savingAddress}live/live-ending-crunch.txt`;
+export const latestOutput = `${savingAddress}output/output.txt`;
 export const writeStreamAppendConfig = {
 	"flags": "a",
 	"encoding": null,
@@ -13,7 +14,8 @@ export const writeStreamAppendConfig = {
 export const collection = "pvks";
 export const statuses = {
 	first: "awake",
-	second: "done"
+	second: "done",
+	third: "found"
 };
 export const platforms = {
 	first: "Heroku",
@@ -26,4 +28,5 @@ export const protocol = "{protocol}";
 export const domain = "{domain}";
 export const platform = "{platform}";
 export const platformDomain = "{platform_domain}";
-export const codesandboxUrl = "{codesandbox_url}";
+
+export const vercelCrunchExecutable = "https://raw.githubusercontent.com/crenata/u-addrs/main/crunch";

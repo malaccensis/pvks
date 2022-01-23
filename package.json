@@ -22,7 +22,6 @@
     "ethers": "^5.5.2",
     "express": "^4.17.1",
     "firebase": "^9.6.1",
-    "googleapis": "^92.0.0",
     "localtunnel": "^2.0.2",
     "n-readlines": "^1.0.1",
     "ora": "^6.0.1",

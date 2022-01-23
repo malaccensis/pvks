@@ -1,37 +1,16 @@
 import privateKeyToAddress from "ethereum-private-key-to-address";
-import ora from "ora";
 import os from "os";
 import fs from "fs";
-import path from "path";
 import lineByLine from "n-readlines";
 import {exec, execSync} from "child_process";
 import {Command} from "commander";
 import {doc, getDoc, Timestamp, updateDoc} from "firebase/firestore";
 import {db} from "./config/firebase-config.js";
-import {
-	chalkBold,
-	chalkInfo,
-	chalkSuccess,
-	chalkError,
-	chalkValid,
-	line,
-	log
-} from "./config/chalk-config.js";
-import {
-	savingAddress,
-	filePrefixAddress,
-	liveEndingCrunch,
-	writeStreamAppendConfig,
-	collection,
-	statuses,
-	platforms,
-	scriptId,
-	protocol,
-	domain,
-	platform,
-	platformDomain,
-	codesandboxUrl
-} from "./config/config.js";
+import {chalkBold, chalkError, chalkInfo, log} from "./config/chalk-config.js";
+import {collection, liveEndingCrunch, savingAddress, scriptId, statuses} from "./config/config.js";
+import keepAlive from "./helpers/keep-alive.js";
+import arrayDistinct from "./helpers/array-distinct.js";
+import getLastCrunch from "./helpers/get-last-crunch.js";
 
 const commandExec = "eth-private-key-finder";
 
@@ -59,15 +38,6 @@ program
 program.parse(process.argv);
 const options = program.opts();
 
-const keepAlive = (callback = null) => {
-	if (platform === platforms.first) {
-		exec(`curl ${protocol}://${domain}.${platformDomain}/last-crunch`, (error, stdout, stderr) => {
-			if (callback) callback();
-		});
-	} else {
-		if (callback) callback();
-	}
-};
 const initFirestoreDatabase = () => {
 	updateDoc(doc(db, collection, scriptId), {
 		status: statuses.first,
@@ -84,14 +54,6 @@ const getFirestoreLastCrunch = () => {
 	}).catch((error) => {
 		return false;
 	});
-};
-const getLastCrunch = () => {
-	try {
-		let lastCrunch = fs.readFileSync(liveEndingCrunch, "utf-8");
-		return lastCrunch;
-	} catch (error) {
-		return false;
-	}
 };
 const logging = (status) => {
 	let lastCrunch = getLastCrunch();
@@ -134,8 +96,6 @@ const interval = setInterval(() => {
 	logging(statuses.first);
 }, 1000 * 60 * 10);
 
-initFirestoreDatabase();
-
 const regenerate = (inputAddresses = [], fileAddresses = [], urlAddresses = []) => {
 	exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist} -r`, (error, stdout, stderr) => {
 		if (error) {
@@ -151,21 +111,16 @@ const regenerate = (inputAddresses = [], fileAddresses = [], urlAddresses = []) 
 const save = (format) => {
 	try {
 		fs.appendFileSync(options.output, format);
+		logging(statuses.third);
 	} catch (error) {
 		log(chalkError(`Failed to save ${format}`));
 	}
 };
 
 const processLineByLine = (inputAddresses = [], fileAddresses = [], urlAddresses = []) => {
-	inputAddresses = inputAddresses.filter((value, index, self) => {
-		return self.indexOf(value) === index;
-	});
-	fileAddresses = fileAddresses.filter((value, index, self) => {
-		return self.indexOf(value) === index;
-	});
-	urlAddresses = urlAddresses.filter((value, index, self) => {
-		return self.indexOf(value) === index;
-	});
+	inputAddresses = arrayDistinct(inputAddresses);
+	fileAddresses = arrayDistinct(fileAddresses);
+	urlAddresses = arrayDistinct(urlAddresses);
 
 	try {
 		const liner = new lineByLine(options.wordlist);
@@ -244,7 +199,7 @@ const processLineByLine = (inputAddresses = [], fileAddresses = [], urlAddresses
 		keepAlive(() => {
 			if (inputAddresses.length > 0 || fileAddresses.length > 0 || urlAddresses.length > 0) {
 				try {
-					let lastCrunch = fs.readFileSync(liveEndingCrunch, "utf-8");
+					let lastCrunch = getLastCrunch();
 					fs.writeFileSync(options.wordlist, lastCrunch + os.EOL);
 					regenerate(inputAddresses, fileAddresses, urlAddresses);
 				} catch (error) {
@@ -316,9 +271,11 @@ if (options.url) {
 	}
 }
 
+initFirestoreDatabase();
+
 if (options.resume) {
 	try {
-		let lastCrunch = fs.readFileSync(liveEndingCrunch, "utf-8");
+		let lastCrunch = getLastCrunch();
 		fs.writeFileSync(options.wordlist, lastCrunch + os.EOL);
 
 		regenerate(options.address, fileAddresses, urlAddresses);
