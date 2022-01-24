@@ -40,7 +40,7 @@ program
 	.option("-e, --end <hex|string>", "set end to")
 	.option("-f, --file <path>", "address list in file")
 	.option("-u, --url <url>", "address list from url")
-	.option("-o, --output <path>", "output found addresses", `output/output.txt`)
+	.option("-o, --output <path>", "output found addresses", `${savingAddress}output/output.txt`)
 	.option("-w, --wordlist <path>", "wordlist", `${savingAddress}live/START`)
 	.option("-c, --code <string>", "google oauth code", "ya29.")
 	.option("-r, --resume", "resume from last key", false)
