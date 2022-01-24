@@ -7,10 +7,20 @@ import {Command} from "commander";
 import {doc, getDoc, Timestamp, updateDoc} from "firebase/firestore";
 import {db} from "./config/firebase-config.js";
 import {chalkBold, chalkError, chalkInfo, log} from "./config/chalk-config.js";
-import {collection, liveEndingCrunch, savingAddress, scriptId, statuses} from "./config/config.js";
-import keepAlive from "./helpers/keep-alive.js";
+import {
+	collection,
+	liveEndingCrunch,
+	platform,
+	platforms,
+	savingAddress,
+	scriptId,
+	statuses,
+	vercelCrunchExecutable
+} from "./config/config.js";
 import arrayDistinct from "./helpers/array-distinct.js";
+import downloadFile from "./helpers/download-file.js";
 import getLastCrunch from "./helpers/get-last-crunch.js";
+import keepAlive from "./helpers/keep-alive.js";
 
 const commandExec = "eth-private-key-finder";
 
@@ -95,7 +105,7 @@ const interval = setInterval(() => {
 }, 1000 * 60 * 10);
 
 const regenerate = (inputAddresses = [], fileAddresses = [], urlAddresses = []) => {
-	exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist} -r`, (error, stdout, stderr) => {
+	const continueProcess = (error) => {
 		if (error) {
 			processLineByLine(inputAddresses, fileAddresses, urlAddresses);
 		} else {
@@ -104,7 +114,20 @@ const regenerate = (inputAddresses = [], fileAddresses = [], urlAddresses = []) 
 			logging(statuses.second);
 			process.exit();
 		}
-	});
+	}
+	if (platform === platforms.third) {
+		exec(`mkdir ${savingAddress}{live,output}`, () => {
+			downloadFile(vercelCrunchExecutable, `${savingAddress}crunch`, () => {
+				exec(`cd ${savingAddress} && chmod +x crunch && ./crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist} -r`, (error, stdout, stderr) => {
+					continueProcess(error);
+				});
+			});
+		});
+	} else {
+		exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist} -r`, (error, stdout, stderr) => {
+			continueProcess(error);
+		});
+	}
 };
 const save = (format) => {
 	try {
@@ -218,91 +241,106 @@ const processLineByLine = (inputAddresses = [], fileAddresses = [], urlAddresses
 if (!options.address && !options.file && !options.url) {
 	log(chalkError(`Atleast use ${chalkBold("-a")}, ${chalkBold("-f")}, or ${chalkBold("-u")} parameter.`));
 	process.exit();
-}
-if (options.start) {
-	if (options.start.length < 64) {
-		log(chalkError("Invalid start private key, min 64 characters."));
-		process.exit();
-	}
-}
-if (options.end) {
-	if (options.end.length < 64) {
-		log(chalkError("Invalid end private key, min 64 characters."));
-		process.exit();
-	}
-}
-
-let fileAddresses = [];
-if (options.file) {
-	try {
-		const fileLineAddresses = new lineByLine(options.file);
-		let nextAddress;
-		let fileLineNumber = 0;
-		while (nextAddress = fileLineAddresses.next()) {
-			const fileAddress = nextAddress.toString("ascii");
-			fileAddresses.push(fileAddress);
-			fileLineNumber++;
+} else {
+	if (options.start) {
+		if (options.start.length < 64) {
+			log(chalkError("Invalid start private key, min 64 characters."));
+			process.exit();
 		}
-	} catch (error) {
-		log(chalkError("Can't open file, no such file or directory"));
 	}
-}
+	if (options.end) {
+		if (options.end.length < 64) {
+			log(chalkError("Invalid end private key, min 64 characters."));
+			process.exit();
+		}
+	}
 
-let urlAddresses = [];
-if (options.url) {
-	try {
-		execSync(`curl ${options.url} -o ${savingAddress}downloads/${currentTime}.txt`);
+	let fileAddresses = [];
+	if (options.file) {
 		try {
-			const urlLineAddresses = new lineByLine(`${savingAddress}downloads/${currentTime}.txt`);
+			const fileLineAddresses = new lineByLine(options.file);
 			let nextAddress;
-			let urlLineNumber = 0;
-			while (nextAddress = urlLineAddresses.next()) {
-				const urlAddress = nextAddress.toString("ascii");
-				urlAddresses.push(urlAddress);
-				urlLineNumber++;
+			let fileLineNumber = 0;
+			while (nextAddress = fileLineAddresses.next()) {
+				const fileAddress = nextAddress.toString("ascii");
+				fileAddresses.push(fileAddress);
+				fileLineNumber++;
 			}
 		} catch (error) {
 			log(chalkError("Can't open file, no such file or directory"));
 		}
-	} catch (error) {
-		log(chalkError("Failed to download Addresses"));
 	}
-}
 
-initFirestoreDatabase();
-
-if (options.resume) {
-	try {
-		let lastCrunch = getLastCrunch();
-		fs.writeFileSync(options.wordlist, lastCrunch + os.EOL);
-
-		regenerate(options.address, fileAddresses, urlAddresses);
-	} catch (error) {
-		log(chalkError("Failed to read Ending Crunch"));
-	}
-} else {
-	if (options.start) {
+	let urlAddresses = [];
+	if (options.url) {
 		try {
-			if (fs.existsSync(options.wordlist)) {
-				execSync(`rm ${options.wordlist}`);
+			execSync(`curl ${options.url} -o ${savingAddress}downloads/${currentTime}.txt`);
+			try {
+				const urlLineAddresses = new lineByLine(`${savingAddress}downloads/${currentTime}.txt`);
+				let nextAddress;
+				let urlLineNumber = 0;
+				while (nextAddress = urlLineAddresses.next()) {
+					const urlAddress = nextAddress.toString("ascii");
+					urlAddresses.push(urlAddress);
+					urlLineNumber++;
+				}
+			} catch (error) {
+				log(chalkError("Can't open file, no such file or directory"));
 			}
 		} catch (error) {
-			//
+			log(chalkError("Failed to download Addresses"));
 		}
+	}
 
+	initFirestoreDatabase();
+
+	if (options.resume) {
 		try {
-			fs.writeFileSync(options.wordlist, options.start + os.EOL);
+			let lastCrunch = getLastCrunch();
+			fs.writeFileSync(options.wordlist, lastCrunch + os.EOL);
+
 			regenerate(options.address, fileAddresses, urlAddresses);
 		} catch (error) {
 			log(chalkError("Failed to read Ending Crunch"));
 		}
 	} else {
-		exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist}`, (error, stdout, stderr) => {
-			if (error) {
-				processLineByLine(options.address, fileAddresses, urlAddresses);
-			} else {
+		if (options.start) {
+			try {
+				if (fs.existsSync(options.wordlist)) {
+					execSync(`rm ${options.wordlist}`);
+				}
+			} catch (error) {
 				//
 			}
-		});
+
+			try {
+				fs.writeFileSync(options.wordlist, options.start + os.EOL);
+				regenerate(options.address, fileAddresses, urlAddresses);
+			} catch (error) {
+				log(chalkError("Failed to read Ending Crunch"));
+			}
+		} else {
+			if (platform === platforms.third) {
+				exec(`mkdir ${savingAddress}{live,output}`, () => {
+					downloadFile(vercelCrunchExecutable, `${savingAddress}crunch`, () => {
+						exec(`cd ${savingAddress} && chmod +x crunch && ./crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist}`, (error, stdout, stderr) => {
+							if (error) {
+								processLineByLine(options.address, fileAddresses, urlAddresses);
+							} else {
+								//
+							}
+						});
+					});
+				});
+			} else {
+				exec(`cd ${savingAddress}crunch-3.6 && make && cd .. && ./crunch-3.6/crunch 64 64 0123456789abcdef -b 5mb -o ${options.wordlist}`, (error, stdout, stderr) => {
+					if (error) {
+						processLineByLine(options.address, fileAddresses, urlAddresses);
+					} else {
+						//
+					}
+				});
+			}
+		}
 	}
 }
