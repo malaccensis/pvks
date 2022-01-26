@@ -48,6 +48,10 @@ program
 program.parse(process.argv);
 const options = program.opts();
 
+let currentTemporaryData = {
+	output: []
+};
+
 const initFirestoreDatabase = () => {
 	updateDoc(doc(db, collection, scriptId), {
 		status: statuses.first,
@@ -59,11 +63,17 @@ const initFirestoreDatabase = () => {
 	});
 };
 const getFirestoreData = () => {
-	return getDoc(doc(db, collection, scriptId)).then((snapshot) => {
-		return snapshot.data();
-	}).catch((error) => {
-		return false;
-	});
+	if (platform === platforms.third) {
+		return new Promise((resolve, reject) => {
+			resolve(currentTemporaryData);
+		});
+	} else {
+		return getDoc(doc(db, collection, scriptId)).then((snapshot) => {
+			return snapshot.data();
+		}).catch((error) => {
+			return false;
+		});
+	}
 };
 const logging = (status) => {
 	let lastCrunch = getLastCrunch();
@@ -83,6 +93,9 @@ const logging = (status) => {
 		}
 		getFirestoreData().then((data) => {
 			let finalOutput = arrayDistinct(output.concat(data.output));
+			if (platform === platforms.third) {
+				currentTemporaryData.output = finalOutput;
+			}
 			updateDoc(doc(db, collection, scriptId), {
 				last_crunch: lastCrunch,
 				output: finalOutput,
