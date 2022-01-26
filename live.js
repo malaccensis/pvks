@@ -52,8 +52,10 @@ let currentTemporaryData = {
 	output: []
 };
 
+const document = doc(db, collection, scriptId);
+
 const initFirestoreDatabase = () => {
-	updateDoc(doc(db, collection, scriptId), {
+	updateDoc(document, {
 		status: statuses.first,
 		updated_at: Timestamp.now()
 	}).then((data) => {
@@ -62,20 +64,7 @@ const initFirestoreDatabase = () => {
 		return initFirestoreDatabase();
 	});
 };
-const getFirestoreData = () => {
-	if (platform === platforms.third) {
-		return new Promise((resolve, reject) => {
-			resolve(currentTemporaryData);
-		});
-	} else {
-		return getDoc(doc(db, collection, scriptId)).then((snapshot) => {
-			return snapshot.data();
-		}).catch((error) => {
-			return false;
-		});
-	}
-};
-const logging = (status) => {
+const logging = (status, callback = null) => {
 	let lastCrunch = getLastCrunch();
 	if (lastCrunch) {
 		let output = [];
@@ -91,26 +80,21 @@ const logging = (status) => {
 		} catch (error) {
 			log(chalkError("Can't open file, no such file or directory"));
 		}
-		getFirestoreData().then((data) => {
-			let finalOutput = arrayDistinct(output.concat(data.output));
-			if (platform === platforms.third) {
-				currentTemporaryData.output = finalOutput;
-			}
-			updateDoc(doc(db, collection, scriptId), {
-				last_crunch: lastCrunch,
-				output: finalOutput,
-				status: status,
-				updated_at: Timestamp.now()
-			}).then((data) => {
-				return true;
-			}).catch((error) => {
-				return logging(status);
-			});
+		let finalOutput = arrayDistinct(output.concat(currentTemporaryData.output));
+		currentTemporaryData.output = finalOutput;
+		updateDoc(document, {
+			last_crunch: lastCrunch,
+			output: finalOutput,
+			status: status,
+			updated_at: Timestamp.now()
+		}).then((data) => {
+			if (callback) callback();
+			return true;
 		}).catch((error) => {
-			return logging(status);
+			return logging(status, callback);
 		});
 	} else {
-		return logging(status);
+		return logging(status, callback);
 	}
 };
 const interval = setInterval(() => {
@@ -124,8 +108,7 @@ const regenerate = (inputAddresses = [], fileAddresses = [], urlAddresses = []) 
 		} else {
 			log(chalkInfo("Done."));
 			clearInterval(interval);
-			logging(statuses.second);
-			process.exit();
+			logging(statuses.second, () => process.exit());
 		}
 	}
 	if (platform === platforms.third) {
@@ -242,8 +225,7 @@ const processLineByLine = (inputAddresses = [], fileAddresses = [], urlAddresses
 			} else {
 				log(chalkInfo("Done."));
 				clearInterval(interval);
-				logging(statuses.second);
-				process.exit();
+				logging(statuses.second, () => process.exit());
 			}
 		});
 	} catch (error) {

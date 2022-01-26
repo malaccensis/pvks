@@ -32,13 +32,19 @@ app.get("/", (request, response) => {
 });
 app.get("/last-crunch", (request, response) => {
 	let lastCrunch = getLastCrunch();
-	if (lastCrunch) response.send(lastCrunch);
-	response.status(500).send("Failed to read Ending Crunch");
+	if (lastCrunch) {
+		response.send(lastCrunch);
+	} else {
+		response.status(500).send("Failed to read Ending Crunch");
+	}
 });
 app.get("/output", (request, response) => {
 	let output = getOutput();
-	if (output) response.send(output);
-	response.status(500).send("Failed to read Output");
+	if (output) {
+		response.send(output);
+	} else {
+		response.status(500).send("Failed to read Output");
+	}
 });
 app.get("/pvk", (request, response) => {
 	let command = request.query.command;
