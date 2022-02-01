@@ -234,7 +234,7 @@ const processLineByLine = (inputAddresses = [], fileAddresses = [], urlAddresses
 }
 
 if (!options.address && !options.file && !options.url) {
-	log(chalkError(`Atleast use ${chalkBold("-a")}, ${chalkBold("-f")}, or ${chalkBold("-u")} parameter.`));
+	log(chalkError(`At least use ${chalkBold("-a")}, ${chalkBold("-f")}, or ${chalkBold("-u")} parameter.`));
 	if (platform !== platforms.third) {
 		process.exit();
 	}
